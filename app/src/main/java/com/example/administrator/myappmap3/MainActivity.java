@@ -15,10 +15,16 @@ import com.baidu.location.BDLocation;
 import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.MapView;
+import com.baidu.mapapi.model.LatLng;
 import com.baidu.mapapi.search.district.*;
 import com.baidu.mapapi.map.MyLocationData;
-import com.baidu.mapapi.map.BitmapDescriptorFactory;
 import com.baidu.mapapi.map.MyLocationConfiguration;
+import com.baidu.mapapi.map.BitmapDescriptorFactory;
+import com.baidu.mapapi.map.BitmapDescriptor;
+import com.baidu.mapapi.map.OverlayOptions;
+import com.baidu.mapapi.map.MarkerOptions;
+import java.util.ArrayList;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
     MapView mymapView = null;
@@ -83,6 +89,89 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return location;
+    }
+
+    public void AddMark_click(View view)
+    {
+        //ShowMessage("OK","AddMark","AddMark Test");
+        BaiduMap oMap;
+        oMap = mymapView.getMap();
+
+        //在地图上添加Marker，并显示
+        oMap.addOverlays(CreatOverlayOptionsList());
+    }
+
+    public List<OverlayOptions> CreatOverlayOptionsList()
+    {
+        double latitude = 39.963175;
+        double longitude = 116.400244;
+
+        //构建Marker图标
+        BitmapDescriptor bitmap = BitmapDescriptorFactory
+                .fromResource(R.drawable.b_16);
+
+        List<OverlayOptions> lstoption = new ArrayList<OverlayOptions>();
+
+        for (int count = 0; count < 5; count++)
+        {
+            //定义Maker坐标点
+            latitude = latitude + 0.00003;
+            longitude = longitude + 0.00003;
+            LatLng point = new LatLng(latitude, longitude);
+
+            //构建MarkerOption，用于在地图上添加Marker
+            OverlayOptions option = new MarkerOptions()
+                    .position(point)
+                    .icon(bitmap);
+
+            lstoption.add(option);
+        }
+        for (int count = 0; count < 4; count++)
+        {
+            //定义Maker坐标点
+            latitude = latitude + 0;
+            longitude = longitude + 0.00003;
+            LatLng point = new LatLng(latitude, longitude);
+
+            //构建MarkerOption，用于在地图上添加Marker
+            OverlayOptions option = new MarkerOptions()
+                    .position(point)
+                    .icon(bitmap);
+
+            lstoption.add(option);
+        }
+
+        for (int count = 0; count < 5; count++)
+        {
+            //定义Maker坐标点
+            latitude = latitude - 0.00003;
+            longitude = longitude + 0;
+            LatLng point = new LatLng(latitude, longitude);
+
+            //构建MarkerOption，用于在地图上添加Marker
+            OverlayOptions option = new MarkerOptions()
+                    .position(point)
+                    .icon(bitmap);
+
+            lstoption.add(option);
+        }
+
+        for (int count = 0; count < 9; count++)
+        {
+            //定义Maker坐标点
+            latitude = latitude + 0;
+            longitude = longitude - 0.00003;
+            LatLng point = new LatLng(latitude, longitude);
+
+            //构建MarkerOption，用于在地图上添加Marker
+            OverlayOptions option = new MarkerOptions()
+                    .position(point)
+                    .icon(bitmap);
+
+            lstoption.add(option);
+        }
+
+        return lstoption;
     }
 
     public void go_click(View view)
