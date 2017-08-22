@@ -1,5 +1,7 @@
 package com.example.administrator.myappmap3;
 
+import android.content.DialogInterface;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
@@ -21,6 +23,11 @@ import com.baidu.mapapi.map.MyLocationConfiguration;
 public class MainActivity extends AppCompatActivity {
     MapView mymapView = null;
     Location location;
+
+    //The minimum distance to change updates in meters
+    private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 0; // 10 meters
+    //The minimum time beetwen updates in milliseconds
+    private static final long MIN_TIME_BW_UPDATES = 0;//1000 * 60 * 1; // 1 minute
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,22 +58,41 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //Get the Location by GPS or WIFI
-    public Location getLocation(Context context) {
-
+    public Location getLocation(Context context)
+    {
         if (ContextCompat.checkSelfPermission( context, android.Manifest.permission.ACCESS_FINE_LOCATION ) != PackageManager.PERMISSION_GRANTED &&
                 ContextCompat.checkSelfPermission( context, android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED)
         {
             return null ;
         }
         LocationManager locMan = (LocationManager) context
-                .getSystemService(Context.LOCATION_SERVICE);
-        if (location == null) {
+                                  .getSystemService(Context.LOCATION_SERVICE);
+
+        boolean enabledGPS = locMan.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        boolean enabledNetwork = locMan.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+        if (enabledGPS)
+        {
+            location = locMan.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+        }
+
+        if (enabledNetwork && location==null)
+        {
             location = locMan.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
         }
+
         return location;
     }
 
-    public void go_click(View view){
+    public void go_click(View view)
+    {
+
+        if (location == null)
+        {
+            ShowMessage("OK","GO!","未能获取当前位置！");
+            return;
+        }
+
         BaiduMap oMap;
         oMap = mymapView.getMap();
         oMap.setMyLocationEnabled(true);
@@ -82,4 +108,23 @@ public class MainActivity extends AppCompatActivity {
         MyLocationConfiguration config = new MyLocationConfiguration(MyLocationConfiguration.LocationMode.NORMAL, true, null);
         oMap.setMyLocationConfiguration(config);
     }
+
+    ///button:按钮显示的文字
+    ///title：标题文字
+    ///message：详细内容文字
+    public void  ShowMessage(CharSequence button ,CharSequence title,CharSequence message )
+    {
+        AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(this);
+        dlgAlert.setMessage(message);
+        dlgAlert.setTitle(title);
+        dlgAlert.setPositiveButton(button,
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int which) {
+                        //dismiss the dialog
+                    }
+                });
+        dlgAlert.setCancelable(true);
+        dlgAlert.create().show();
+    }
+
 }
