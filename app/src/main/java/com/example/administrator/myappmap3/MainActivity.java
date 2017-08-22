@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 0; // 10 meters
     //The minimum time beetwen updates in milliseconds
     private static final long MIN_TIME_BW_UPDATES = 0;//1000 * 60 * 1; // 1 minute
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
