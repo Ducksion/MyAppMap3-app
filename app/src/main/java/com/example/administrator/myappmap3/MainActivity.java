@@ -1,6 +1,9 @@
 package com.example.administrator.myappmap3;
 
+import android.content.ContentValues;
 import android.content.DialogInterface;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -10,13 +13,11 @@ import android.content.pm.*;
 import android.support.v4.content.*;
 import android.location.Location;
 import android.location.LocationManager;
-import android.widget.*;
-import com.baidu.location.BDLocation;
+
 import com.baidu.mapapi.SDKInitializer;
 import com.baidu.mapapi.map.BaiduMap;
 import com.baidu.mapapi.map.MapView;
 import com.baidu.mapapi.model.LatLng;
-import com.baidu.mapapi.search.district.*;
 import com.baidu.mapapi.map.MyLocationData;
 import com.baidu.mapapi.map.MyLocationConfiguration;
 import com.baidu.mapapi.map.BitmapDescriptorFactory;
@@ -24,11 +25,14 @@ import com.baidu.mapapi.map.BitmapDescriptor;
 import com.baidu.mapapi.map.OverlayOptions;
 import com.baidu.mapapi.map.MarkerOptions;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.text.SimpleDateFormat;
 
 public class MainActivity extends AppCompatActivity {
     MapView mymapView = null;
     Location location;
+    DatabaseHelper DBHelp;
 
     //The minimum distance to change updates in meters
     private static final long MIN_DISTANCE_CHANGE_FOR_UPDATES = 0; // 10 meters
@@ -43,6 +47,7 @@ public class MainActivity extends AppCompatActivity {
         //获取地图控件引用
         mymapView = (MapView) findViewById(R.id.mymapView);
         location = getLocation(this);
+        DBHelp = new DatabaseHelper(MainActivity.this,"MapData_db",null,1);
     }
 
     @Override
@@ -125,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
                     .icon(bitmap);
 
             lstoption.add(option);
+            savePointToDB(latitude, longitude, count);
         }
         for (int count = 0; count < 4; count++)
         {
@@ -139,6 +145,7 @@ public class MainActivity extends AppCompatActivity {
                     .icon(bitmap);
 
             lstoption.add(option);
+            savePointToDB(latitude, longitude, count);
         }
 
         for (int count = 0; count < 5; count++)
@@ -154,6 +161,7 @@ public class MainActivity extends AppCompatActivity {
                     .icon(bitmap);
 
             lstoption.add(option);
+            savePointToDB(latitude, longitude, count);
         }
 
         for (int count = 0; count < 9; count++)
@@ -169,9 +177,63 @@ public class MainActivity extends AppCompatActivity {
                     .icon(bitmap);
 
             lstoption.add(option);
+            savePointToDB(latitude, longitude, count);
         }
 
         return lstoption;
+    }
+
+    public void getPoint_click(View view)
+    {
+        List<PointData> lstPointData = new ArrayList<PointData>();
+
+        SQLiteDatabase db =DBHelp.getReadableDatabase();
+        Cursor PointHis = db.rawQuery("select * from PointHistory", null);
+
+        if (PointHis.getCount() > 0 )
+        {
+            PointHis.moveToFirst();
+            while (PointHis.moveToNext())
+            {
+                //0 id int,1 createdate date,2 latitude double,3 longitude double,4 comment varchar(40)
+                PointData oPointData = new PointData();
+                oPointData.setId(PointHis.getInt(0));
+                oPointData.createdate = PointHis.getString(1);
+                oPointData.latitude = PointHis.getDouble(2);
+                oPointData.longitude = PointHis.getDouble(3);
+                oPointData.comment = PointHis.getString(4);
+
+                lstPointData.add(oPointData);
+
+            }
+
+        }
+
+
+    }
+
+    private void savePointToDB(double latitude, double longitude, int count)
+    {
+        //得到一个可写的数据库
+        SQLiteDatabase db =DBHelp.getWritableDatabase();
+
+        SimpleDateFormat formatter = new SimpleDateFormat   ("yyyy/MM/dd HH:mm:ss");
+        Date curDate =  new Date(System.currentTimeMillis());
+        String  str = formatter.format(curDate);
+
+        //id int,createdate date,latitude double,longitude double,comment varchar(40)
+        //生成ContentValues对象 //key:列名，value:想插入的值
+        ContentValues cv = new ContentValues();
+
+        //往ContentValues对象存放数据，键-值对模式
+        cv.put("id", count);
+        cv.put("createdate", str);
+        cv.put("latitude", latitude);
+        cv.put("longitude", longitude);
+        cv.put("comment", "");
+
+        db.insert("PointHistory", null, cv);
+        db.close();
     }
 
     public void go_click(View view)
